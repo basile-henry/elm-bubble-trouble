@@ -1,0 +1,16 @@
+{
+    "version": "1.0.0",
+    "summary": "Bubble Trouble toy project written in Elm",
+    "repository": "https://github.com/basile-henry/elm-bubble-trouble.git",
+    "license": "MIT",
+    "source-directories": [
+        "src"
+    ],
+    "exposed-modules": [],
+    "dependencies": {
+        "elm-community/elm-linear-algebra": "2.0.0 <= v < 3.0.0",
+        "elm-lang/core": "3.0.0 <= v < 4.0.0",
+        "jwmerrill/elm-animation-frame": "1.0.5 <= v < 2.0.0"
+    },
+    "elm-version": "0.16.0 <= v < 0.17.0"
+}
