@@ -3,6 +3,9 @@ module BubbleTrouble.Ball where
 import Color exposing (Color, Gradient, radial, toHsl, hsla)
 import Graphics.Collage exposing (Form, circle, gradient, move)
 import Math.Vector2 exposing (Vec2, vec2, add, sub, normalize, scale, toTuple)
+
+import Utils exposing (lum)
+
 import Debug
 
 type alias Model =
@@ -85,8 +88,4 @@ getGradient ball =
     in
         radial inner innerR outer ball.radius stops
 
-lum : Float -> Color -> Color
-lum w c =
-    let {hue, saturation, lightness, alpha} = toHsl c
-    in
-        hsla hue saturation (w * lightness) alpha
+getSegment 

@@ -1,9 +1,12 @@
 module BubbleTrouble.Player where
 
 import Color exposing (Color, Gradient, complement, linear, white, toHsl, hsla)
-import Graphics.Collage exposing (Form, polygon, gradient, move)
-import Math.Vector2 exposing (Vec2, vec2, add, scale, toTuple)
+import Graphics.Collage exposing (Form, polygon, gradient, move, group, dashed, outlined, circle)
+import Math.Vector2 exposing (Vec2, vec2, add, scale, toTuple, getY)
 import Time exposing (Time)
+
+import Utils exposing (lum)
+import BubbleTrouble.Projectile as Projectile
 
 import Debug
 
@@ -13,6 +16,7 @@ type alias Model =
     , color : Color
     , dir : Direction
     , lastShot : Time
+    , projectiles : List Projectile.Model
     , dims : (Int, Int)
     }
 
@@ -28,7 +32,7 @@ newPlayer : Color -> (Int, Int) -> Model
 newPlayer color dims =
     let y = (\x -> -x/2) <| toFloat <| snd dims
     in
-        Model (vec2 0 y) 160 color Stop 0 dims
+        Model (vec2 0 y) 160 color Stop 0 [] dims
 
 update : Action -> Model -> Model
 update action player =
@@ -37,26 +41,45 @@ update action player =
             { player | dir = Debug.watch "Direction" dir' }
 
         Shoot t ->
-            { player
-                | lastShot = t
-                , color = complement player.color
-            }
+            let pos = add player.pos <| vec2 0 40
+                newProjs =
+                    if player.projectiles == [] then
+                        Projectile.simpleProjectile pos player.color player.dims :: player.projectiles
+                    else
+                        player.projectiles
+            in
+                { player
+                    | lastShot = t
+                    , projectiles = newProjs
+                }
 
         Tick dt ->
-            { player
-                | pos =
+            let (_, h) = player.dims
+                projs =
+                    player.projectiles
+                        |> List.map (Projectile.update (Projectile.Tick dt))
+                        |> List.filter ((\x -> x < toFloat h/2) << getY << .pos)
+                newPos =
                     player.dir
                         |> toVec
                         |> scale (dt * player.speed)
                         |> add player.pos
                         |> inBounds player.dims
-            }
+            in
+                { player
+                    | pos = newPos
+                    , projectiles = projs
+                }
 
 view : Model -> Form
 view player =
-    polygon [(-20, 0), (0, 40), (20, 0)]
-        |> gradient (getGradient player)
-        |> move (Debug.watch "Position" <| toTuple player.pos)
+    let playerView =
+            polygon [(-20, 0), (0, 40), (20, 0)]
+                |> gradient (getGradient player)
+                |> move (Debug.watch "Position" <| toTuple player.pos)
+        projViews = List.map (Projectile.view) player.projectiles
+    in
+        group <| projViews ++ [playerView]
 
 toVec : Direction -> Vec2
 toVec dir =
@@ -87,10 +110,3 @@ getGradient player =
         , (0.8, lum 1.5 player.color)
         , (1.0, player.color)
         ]
-
-lum : Float -> Color -> Color
-lum w c =
-    let {hue, saturation, lightness, alpha} = toHsl c
-    in
-        hsla hue saturation (w * lightness) alpha
-

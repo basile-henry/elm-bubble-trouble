@@ -6,8 +6,10 @@ import Graphics.Collage exposing (circle, filled, move, collage)
 import Graphics.Element exposing (..)
 import Time exposing (Time)
 
+import Utils exposing (lum)
 import BubbleTrouble.Ball as Ball
 import BubbleTrouble.Player as Player
+import BubbleTrouble.Collisions exposing (ballCollisions, playerCollisions)
 
 type alias Model =
     { dims : (Int, Int)
@@ -30,9 +32,11 @@ update : Action -> Model -> Model
 update action model =
     case action of
         Tick dt ->
+            let newBalls = List.map (Ball.update <| Ball.Tick dt) model.balls
+                newPlayers = List.map (updatePlayer dt) model.players
             { model
-                | balls = List.map (Ball.update <| Ball.Tick dt) model.balls
-                , players = List.map (updatePlayer dt) model.players
+                | balls = ballCollisions newPlayers.projectiles newBalls
+                , players = playerCollisions newBalls newPlayers
             }
 
 
@@ -49,7 +53,7 @@ view model =
     in
         forms
             |> collage (fst model.dims) (snd model.dims)
-            |> color lightYellow
+            |> color (lum 1.15 lightYellow)
 
 controlPlayer : Time -> List KeyCode -> ControledPlayer -> ControledPlayer
 controlPlayer t keys (ctrls, player) =
