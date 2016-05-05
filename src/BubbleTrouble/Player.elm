@@ -86,7 +86,10 @@ update action player =
                 }
 
         Hit ->
-            { player | status = Dead }
+            { player
+                | status = Dead
+                , dir = Stop
+            }
 
 view : Model -> Form
 view player =
