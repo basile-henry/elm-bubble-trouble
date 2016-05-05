@@ -2,10 +2,10 @@ module BubbleTrouble.Player where
 
 import Color exposing (Color, Gradient, complement, linear, white, toHsl, hsla)
 import Graphics.Collage exposing (Form, polygon, gradient, move, group, dashed, outlined, circle)
-import Math.Vector2 exposing (Vec2, vec2, add, scale, toTuple, getY)
+import Math.Vector2 exposing (Vec2, vec2, add, scale, toTuple, fromTuple, getY)
 import Time exposing (Time)
 
-import Utils exposing (lum)
+import Utils exposing (lum, transparency)
 import BubbleTrouble.Projectile as Projectile
 
 import Debug
@@ -17,6 +17,7 @@ type alias Model =
     , dir : Direction
     , lastShot : Time
     , projectiles : List Projectile.Model
+    , status : Status
     , dims : (Int, Int)
     }
 
@@ -24,21 +25,31 @@ type Direction  = Left
                 | Right
                 | Stop
 
+type Status = Alive
+            | Dead
+
 type Action = Go Direction
             | Shoot Time
             | Tick Float
+            | Hit
+
+shape : List (Float, Float)
+shape = [(-20, 0), (0, 40), (20, 0)]
 
 newPlayer : Color -> (Int, Int) -> Model
 newPlayer color dims =
     let y = (\x -> -x/2) <| toFloat <| snd dims
     in
-        Model (vec2 0 y) 160 color Stop 0 [] dims
+        Model (vec2 0 y) 160 color Stop 0 [] Alive dims
 
 update : Action -> Model -> Model
 update action player =
     case action of
         Go dir' ->
-            { player | dir = Debug.watch "Direction" dir' }
+            if player.status == Alive then
+                { player | dir = Debug.watch "Direction" dir' }
+            else
+                { player | dir = Stop }
 
         Shoot t ->
             let pos = add player.pos <| vec2 0 40
@@ -48,10 +59,13 @@ update action player =
                     else
                         player.projectiles
             in
-                { player
-                    | lastShot = t
-                    , projectiles = newProjs
-                }
+                if player.status == Alive then
+                    { player
+                        | lastShot = t
+                        , projectiles = newProjs
+                    }
+                else
+                    player
 
         Tick dt ->
             let (_, h) = player.dims
@@ -71,10 +85,13 @@ update action player =
                     , projectiles = projs
                 }
 
+        Hit ->
+            { player | status = Dead }
+
 view : Model -> Form
 view player =
     let playerView =
-            polygon [(-20, 0), (0, 40), (20, 0)]
+            polygon shape
                 |> gradient (getGradient player)
                 |> move (Debug.watch "Position" <| toTuple player.pos)
         projViews = List.map (Projectile.view) player.projectiles
@@ -102,11 +119,23 @@ inBounds (w', _) pos =
 
 getGradient : Model -> Gradient
 getGradient player =
-    linear (0, 0) (-20, 5)
-        [ (0.0, player.color)
-        , (0.1, player.color)
-        , (0.3, lum 1.5 player.color)
-        , (0.5, white)
-        , (0.8, lum 1.5 player.color)
-        , (1.0, player.color)
-        ]
+    let color =
+        if player.status == Alive then
+            player.color
+        else
+            transparency 0.2 player.color
+    in
+        linear (0, 0) (-20, 5)
+            [ (0.0, color)
+            , (0.1, color)
+            , (0.3, lum 1.5 color)
+            , (0.5, lum 5.0 color)
+            , (0.8, lum 1.5 color)
+            , (1.0, color)
+            ]
+
+getSegments : Model -> List (Vec2, Vec2)
+getSegments player =
+    let vecs = List.map (add player.pos << fromTuple) shape
+    in
+        List.map2 (,) vecs <| List.drop 1 vecs ++ List.take 1 vecs

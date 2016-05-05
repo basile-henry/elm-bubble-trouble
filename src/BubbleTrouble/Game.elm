@@ -9,7 +9,8 @@ import Time exposing (Time)
 import Utils exposing (lum)
 import BubbleTrouble.Ball as Ball
 import BubbleTrouble.Player as Player
-import BubbleTrouble.Collisions exposing (ballCollisions, playerCollisions)
+import BubbleTrouble.Projectile as Projectile
+import BubbleTrouble.Collisions exposing (ballCollisions, playerCollision)
 
 type alias Model =
     { dims : (Int, Int)
@@ -32,13 +33,12 @@ update : Action -> Model -> Model
 update action model =
     case action of
         Tick dt ->
-            let newBalls = List.map (Ball.update <| Ball.Tick dt) model.balls
-                newPlayers = List.map (updatePlayer dt) model.players
-            { model
-                | balls = ballCollisions newPlayers.projectiles newBalls
-                , players = playerCollisions newBalls newPlayers
-            }
-
+            let newBalls = updateBalls dt model.players model.balls
+            in
+                { model
+                    | balls = newBalls
+                    , players = List.map (updatePlayer dt newBalls) model.players
+                }
 
         Control (t, keys) ->
             { model
@@ -76,6 +76,11 @@ controlPlayer t keys (ctrls, player) =
         (ctrls, player'')
 
 
-updatePlayer : Float -> ControledPlayer -> ControledPlayer
-updatePlayer dt (ctrls, player) =
-    (ctrls, Player.update (Player.Tick dt) player)
+updatePlayer : Float -> List Ball.Model -> ControledPlayer -> ControledPlayer
+updatePlayer dt balls (ctrls, player) =
+    (ctrls, playerCollision balls <| Player.update (Player.Tick dt) player)
+
+updateBalls : Float -> List ControledPlayer -> List Ball.Model -> List Ball.Model
+updateBalls dt players =
+        List.map (Ball.update <| Ball.Tick dt)
+            >> ballCollisions (List.concatMap (.projectiles << snd) players)

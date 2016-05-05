@@ -1,27 +1,38 @@
 module BubbleTrouble.Collisions where
 
-import Math.Vector2 exposing (Vec2, vec2, add, sub, dot, scale, norm, normalize, distance)
+import Math.Vector2 exposing (Vec2, vec2, add, sub, dot, scale, length, normalize, distance)
 import BubbleTrouble.Ball as Ball
 import BubbleTrouble.Player as Player
 import BubbleTrouble.Projectile as Projectile
 
 ballCollisions : List Projectile.Model -> List Ball.Model -> List Ball.Model
 ballCollisions projs =
-    let ps = List.map Projectile.getSegment projs
+    let segs = List.map Projectile.getSegment projs
         collides ball =
-            List.any (\p -> distPointSegment ball.pos (fst p) (snd p)) ps
+            List.any (\seg -> distPointSegment ball.pos seg < ball.radius) segs
     in
         List.filter (not << collides)
 
-playerCollisions : List Ball.Model -> List Player.Model -> List Player.Model
+playerCollision : List Ball.Model -> Player.Model -> Player.Model
+playerCollision balls player =
+    let collides =
+            List.any
+                (\b ->
+                    List.any (\seg -> distPointSegment b.pos seg < b.radius)
+                        <| Player.getSegments player)
+                balls
+    in
+        if collides then
+            Player.update Player.Hit player
+        else
+            player
 
-
-distPointSegment : Vec2 -> Vec2 -> Vec2 -> Float
-distPointSegment p a b =
+distPointSegment : Vec2 -> (Vec2, Vec2) -> Float
+distPointSegment p (a, b) =
     let v = sub b a
         vn = normalize v
         dc = dot vn <| sub p a
-        dv = norm v
+        dv = length v
         c =
             if dc > dv then
                 b

@@ -37,3 +37,13 @@ view proj =
     in
         segment (x, y) (x, b)
             |> traced (dashed proj.color)
+
+getSegment : Model -> (Vec2, Vec2)
+getSegment proj =
+    let bottom =
+        -(toFloat <| snd proj.dims)/2
+            |> vec2 0
+            |> add proj.pos
+    in
+        (proj.pos, bottom)
+

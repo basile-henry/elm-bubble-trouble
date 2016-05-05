@@ -87,5 +87,3 @@ getGradient ball =
             ]
     in
         radial inner innerR outer ball.radius stops
-
-getSegment 
