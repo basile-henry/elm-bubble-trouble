@@ -5642,6 +5642,32 @@ Elm.Math.Vector2.make = function (_elm) {
                                      ,normalize: normalize
                                      ,scale: scale
                                      ,dot: dot};
+};Elm.Utils = Elm.Utils || {};
+Elm.Utils.make = function (_elm) {
+   "use strict";
+   _elm.Utils = _elm.Utils || {};
+   if (_elm.Utils.values) return _elm.Utils.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var fromRgba = function (_p0) {    var _p1 = _p0;return A4($Color.rgba,_p1.red,_p1.green,_p1.blue,_p1.alpha);};
+   var transparency = F2(function (a,c) {    var ci = $Color.toRgb(c);return fromRgba(_U.update(ci,{alpha: a}));});
+   var ColorInternal = F4(function (a,b,c,d) {    return {red: a,green: b,blue: c,alpha: d};});
+   var lum = F2(function (w,c) {
+      var _p2 = $Color.toHsl(c);
+      var hue = _p2.hue;
+      var saturation = _p2.saturation;
+      var lightness = _p2.lightness;
+      var alpha = _p2.alpha;
+      return A4($Color.hsla,hue,saturation,w * lightness,alpha);
+   });
+   return _elm.Utils.values = {_op: _op,lum: lum,ColorInternal: ColorInternal,fromRgba: fromRgba,transparency: transparency};
 };Elm.BubbleTrouble = Elm.BubbleTrouble || {};
 Elm.BubbleTrouble.Ball = Elm.BubbleTrouble.Ball || {};
 Elm.BubbleTrouble.Ball.make = function (_elm) {
@@ -5658,24 +5684,17 @@ Elm.BubbleTrouble.Ball.make = function (_elm) {
    $Math$Vector2 = Elm.Math.Vector2.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   $Signal = Elm.Signal.make(_elm),
+   $Utils = Elm.Utils.make(_elm);
    var _op = {};
-   var lum = F2(function (w,c) {
-      var _p0 = $Color.toHsl(c);
-      var hue = _p0.hue;
-      var saturation = _p0.saturation;
-      var lightness = _p0.lightness;
-      var alpha = _p0.alpha;
-      return A4($Color.hsla,hue,saturation,w * lightness,alpha);
-   });
    var getGradient = function (ball) {
-      var stops = _U.list([{ctor: "_Tuple2",_0: 0,_1: A2(lum,1.5,ball.color)}
+      var stops = _U.list([{ctor: "_Tuple2",_0: 0,_1: A2($Utils.lum,1.5,ball.color)}
                           ,{ctor: "_Tuple2",_0: 0.4,_1: ball.color}
                           ,{ctor: "_Tuple2",_0: 0.8,_1: ball.color}
-                          ,{ctor: "_Tuple2",_0: 1.0,_1: A2(lum,0.5,ball.color)}]);
-      var _p1 = ball.dims;
-      var w = _p1._0;
-      var h = _p1._1;
+                          ,{ctor: "_Tuple2",_0: 1.0,_1: A2($Utils.lum,0.5,ball.color)}]);
+      var _p0 = ball.dims;
+      var w = _p0._0;
+      var h = _p0._1;
       var topLeft = A2($Math$Vector2.vec2,(0 - $Basics.toFloat(w)) / 2,$Basics.toFloat(h) / 2);
       var outer = {ctor: "_Tuple2",_0: 0,_1: 0};
       var ratio = 0.7;
@@ -5685,18 +5704,18 @@ Elm.BubbleTrouble.Ball.make = function (_elm) {
    };
    var bounce = F2(function (pos,ball) {
       var r = ball.radius;
-      var _p2 = ball.dims;
-      var w$ = _p2._0;
-      var h$ = _p2._1;
-      var _p3 = {ctor: "_Tuple2",_0: $Basics.toFloat(w$),_1: $Basics.toFloat(h$)};
-      var w = _p3._0;
-      var h = _p3._1;
-      var _p4 = $Math$Vector2.toTuple(ball.speed);
-      var dx = _p4._0;
-      var dy = _p4._1;
-      var _p5 = $Math$Vector2.toTuple(pos);
-      var x = _p5._0;
-      var y = _p5._1;
+      var _p1 = ball.dims;
+      var w$ = _p1._0;
+      var h$ = _p1._1;
+      var _p2 = {ctor: "_Tuple2",_0: $Basics.toFloat(w$),_1: $Basics.toFloat(h$)};
+      var w = _p2._0;
+      var h = _p2._1;
+      var _p3 = $Math$Vector2.toTuple(ball.speed);
+      var dx = _p3._0;
+      var dy = _p3._1;
+      var _p4 = $Math$Vector2.toTuple(pos);
+      var x = _p4._0;
+      var y = _p4._1;
       return _U.cmp(x - r,(0 - w) / 2) < 0 ? _U.cmp(y - r,(0 - h) / 2) < 0 ? $Maybe.Just(A2($Math$Vector2.vec2,$Basics.abs(dx),$Basics.abs(dy))) : _U.cmp(y + r,
       h / 2) > 0 ? $Maybe.Just(A2($Math$Vector2.vec2,$Basics.abs(dx),$Basics.negate($Basics.abs(dy)))) : $Maybe.Just(A2($Math$Vector2.vec2,
       $Basics.abs(dx),
@@ -5713,75 +5732,22 @@ Elm.BubbleTrouble.Ball.make = function (_elm) {
       return A2($Graphics$Collage.move,$Math$Vector2.toTuple(ball.pos),A2($Graphics$Collage.gradient,getGradient(ball),$Graphics$Collage.circle(ball.radius)));
    };
    var update = F2(function (action,ball) {
-      var _p6 = action;
-      var _p8 = _p6._0;
-      var pos$ = A2($Math$Vector2.add,ball.pos,A2($Math$Vector2.scale,_p8,ball.speed));
+      var _p5 = action;
+      var _p7 = _p5._0;
+      var pos$ = A2($Math$Vector2.add,ball.pos,A2($Math$Vector2.scale,_p7,ball.speed));
       var speed$ = function () {
-         var _p7 = A2(bounce,pos$,ball);
-         if (_p7.ctor === "Nothing") {
-               return A2($Math$Vector2.add,ball.speed,A2($Math$Vector2.scale,_p8,A2($Math$Vector2.scale,ball.gravity,A2($Math$Vector2.vec2,0,1))));
+         var _p6 = A2(bounce,pos$,ball);
+         if (_p6.ctor === "Nothing") {
+               return A2($Math$Vector2.add,ball.speed,A2($Math$Vector2.scale,_p7,A2($Math$Vector2.scale,ball.gravity,A2($Math$Vector2.vec2,0,1))));
             } else {
-               return _p7._0;
+               return _p6._0;
             }
       }();
       return _U.update(ball,{pos: pos$,speed: speed$});
    });
    var Tick = function (a) {    return {ctor: "Tick",_0: a};};
    var Model = F6(function (a,b,c,d,e,f) {    return {pos: a,speed: b,radius: c,gravity: d,color: e,dims: f};});
-   return _elm.BubbleTrouble.Ball.values = {_op: _op,Model: Model,Tick: Tick,update: update,view: view,bounce: bounce,getGradient: getGradient,lum: lum};
-};Elm.Native.Char = {};
-Elm.Native.Char.make = function(localRuntime) {
-	localRuntime.Native = localRuntime.Native || {};
-	localRuntime.Native.Char = localRuntime.Native.Char || {};
-	if (localRuntime.Native.Char.values)
-	{
-		return localRuntime.Native.Char.values;
-	}
-
-	var Utils = Elm.Native.Utils.make(localRuntime);
-
-	return localRuntime.Native.Char.values = {
-		fromCode: function(c) { return Utils.chr(String.fromCharCode(c)); },
-		toCode: function(c) { return c.charCodeAt(0); },
-		toUpper: function(c) { return Utils.chr(c.toUpperCase()); },
-		toLower: function(c) { return Utils.chr(c.toLowerCase()); },
-		toLocaleUpper: function(c) { return Utils.chr(c.toLocaleUpperCase()); },
-		toLocaleLower: function(c) { return Utils.chr(c.toLocaleLowerCase()); }
-	};
-};
-Elm.Char = Elm.Char || {};
-Elm.Char.make = function (_elm) {
-   "use strict";
-   _elm.Char = _elm.Char || {};
-   if (_elm.Char.values) return _elm.Char.values;
-   var _U = Elm.Native.Utils.make(_elm),$Basics = Elm.Basics.make(_elm),$Native$Char = Elm.Native.Char.make(_elm);
-   var _op = {};
-   var fromCode = $Native$Char.fromCode;
-   var toCode = $Native$Char.toCode;
-   var toLocaleLower = $Native$Char.toLocaleLower;
-   var toLocaleUpper = $Native$Char.toLocaleUpper;
-   var toLower = $Native$Char.toLower;
-   var toUpper = $Native$Char.toUpper;
-   var isBetween = F3(function (low,high,$char) {    var code = toCode($char);return _U.cmp(code,toCode(low)) > -1 && _U.cmp(code,toCode(high)) < 1;});
-   var isUpper = A2(isBetween,_U.chr("A"),_U.chr("Z"));
-   var isLower = A2(isBetween,_U.chr("a"),_U.chr("z"));
-   var isDigit = A2(isBetween,_U.chr("0"),_U.chr("9"));
-   var isOctDigit = A2(isBetween,_U.chr("0"),_U.chr("7"));
-   var isHexDigit = function ($char) {
-      return isDigit($char) || (A3(isBetween,_U.chr("a"),_U.chr("f"),$char) || A3(isBetween,_U.chr("A"),_U.chr("F"),$char));
-   };
-   return _elm.Char.values = {_op: _op
-                             ,isUpper: isUpper
-                             ,isLower: isLower
-                             ,isDigit: isDigit
-                             ,isOctDigit: isOctDigit
-                             ,isHexDigit: isHexDigit
-                             ,toUpper: toUpper
-                             ,toLower: toLower
-                             ,toLocaleUpper: toLocaleUpper
-                             ,toLocaleLower: toLocaleLower
-                             ,toCode: toCode
-                             ,fromCode: fromCode};
+   return _elm.BubbleTrouble.Ball.values = {_op: _op,Model: Model,Tick: Tick,update: update,view: view,bounce: bounce,getGradient: getGradient};
 };Elm.Native.Time = {};
 
 Elm.Native.Time.make = function(localRuntime)
@@ -5937,12 +5903,12 @@ Elm.Time.make = function (_elm) {
                              ,delay: delay
                              ,since: since};
 };Elm.BubbleTrouble = Elm.BubbleTrouble || {};
-Elm.BubbleTrouble.Player = Elm.BubbleTrouble.Player || {};
-Elm.BubbleTrouble.Player.make = function (_elm) {
+Elm.BubbleTrouble.Projectile = Elm.BubbleTrouble.Projectile || {};
+Elm.BubbleTrouble.Projectile.make = function (_elm) {
    "use strict";
    _elm.BubbleTrouble = _elm.BubbleTrouble || {};
-   _elm.BubbleTrouble.Player = _elm.BubbleTrouble.Player || {};
-   if (_elm.BubbleTrouble.Player.values) return _elm.BubbleTrouble.Player.values;
+   _elm.BubbleTrouble.Projectile = _elm.BubbleTrouble.Projectile || {};
+   if (_elm.BubbleTrouble.Projectile.values) return _elm.BubbleTrouble.Projectile.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Color = Elm.Color.make(_elm),
@@ -5952,84 +5918,253 @@ Elm.BubbleTrouble.Player.make = function (_elm) {
    $Math$Vector2 = Elm.Math.Vector2.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $Time = Elm.Time.make(_elm);
+   $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var lum = F2(function (w,c) {
-      var _p0 = $Color.toHsl(c);
-      var hue = _p0.hue;
-      var saturation = _p0.saturation;
-      var lightness = _p0.lightness;
-      var alpha = _p0.alpha;
-      return A4($Color.hsla,hue,saturation,w * lightness,alpha);
-   });
-   var getGradient = function (player) {
-      return A3($Color.linear,
-      {ctor: "_Tuple2",_0: 0,_1: 0},
-      {ctor: "_Tuple2",_0: -20,_1: 5},
-      _U.list([{ctor: "_Tuple2",_0: 0.0,_1: player.color}
-              ,{ctor: "_Tuple2",_0: 0.1,_1: player.color}
-              ,{ctor: "_Tuple2",_0: 0.3,_1: A2(lum,1.5,player.color)}
-              ,{ctor: "_Tuple2",_0: 0.5,_1: $Color.white}
-              ,{ctor: "_Tuple2",_0: 0.8,_1: A2(lum,1.5,player.color)}
-              ,{ctor: "_Tuple2",_0: 1.0,_1: player.color}]));
+   var getSegment = function (proj) {
+      var bottom = A2($Math$Vector2.add,proj.pos,A2($Math$Vector2.vec2,0,(0 - $Basics.toFloat($Basics.snd(proj.dims))) / 2));
+      return {ctor: "_Tuple2",_0: proj.pos,_1: bottom};
    };
-   var inBounds = F2(function (_p1,pos) {
-      var _p2 = _p1;
-      var w = $Basics.toFloat(_p2._0);
-      var _p3 = $Math$Vector2.toTuple(pos);
-      var x = _p3._0;
-      var y = _p3._1;
+   var view = function (proj) {
+      var b = (0 - $Basics.toFloat($Basics.snd(proj.dims))) / 2;
+      var _p0 = A2($Debug.watch,"Projectile",$Math$Vector2.toTuple(proj.pos));
+      var x = _p0._0;
+      var y = _p0._1;
+      return A2($Graphics$Collage.traced,
+      $Graphics$Collage.dashed(proj.color),
+      A2($Graphics$Collage.segment,{ctor: "_Tuple2",_0: x,_1: y},{ctor: "_Tuple2",_0: x,_1: b}));
+   };
+   var update = F2(function (action,proj) {
+      var _p1 = action;
+      return _U.update(proj,{pos: A2($Math$Vector2.add,proj.pos,A2($Math$Vector2.scale,_p1._0,proj.speed))});
+   });
+   var Tick = function (a) {    return {ctor: "Tick",_0: a};};
+   var Simple = {ctor: "Simple"};
+   var Model = F5(function (a,b,c,d,e) {    return {kind: a,pos: b,speed: c,color: d,dims: e};});
+   var simpleProjectile = function (pos) {    return A3(Model,Simple,pos,A2($Math$Vector2.vec2,0,150));};
+   return _elm.BubbleTrouble.Projectile.values = {_op: _op
+                                                 ,Model: Model
+                                                 ,Simple: Simple
+                                                 ,simpleProjectile: simpleProjectile
+                                                 ,Tick: Tick
+                                                 ,update: update
+                                                 ,view: view
+                                                 ,getSegment: getSegment};
+};Elm.BubbleTrouble = Elm.BubbleTrouble || {};
+Elm.BubbleTrouble.Player = Elm.BubbleTrouble.Player || {};
+Elm.BubbleTrouble.Player.make = function (_elm) {
+   "use strict";
+   _elm.BubbleTrouble = _elm.BubbleTrouble || {};
+   _elm.BubbleTrouble.Player = _elm.BubbleTrouble.Player || {};
+   if (_elm.BubbleTrouble.Player.values) return _elm.BubbleTrouble.Player.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $BubbleTrouble$Projectile = Elm.BubbleTrouble.Projectile.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Math$Vector2 = Elm.Math.Vector2.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Time = Elm.Time.make(_elm),
+   $Utils = Elm.Utils.make(_elm);
+   var _op = {};
+   var inBounds = F2(function (_p0,pos) {
+      var _p1 = _p0;
+      var w = $Basics.toFloat(_p1._0);
+      var _p2 = $Math$Vector2.toTuple(pos);
+      var x = _p2._0;
+      var y = _p2._1;
       return _U.cmp(x,(0 - w) / 2) < 0 ? A2($Math$Vector2.vec2,(0 - w) / 2,y) : _U.cmp(x,w / 2) > 0 ? A2($Math$Vector2.vec2,w / 2,y) : pos;
    });
    var toVec = function (dir) {
-      var _p4 = dir;
-      switch (_p4.ctor)
+      var _p3 = dir;
+      switch (_p3.ctor)
       {case "Left": return A2($Math$Vector2.vec2,-1,0);
          case "Right": return A2($Math$Vector2.vec2,1,0);
          default: return A2($Math$Vector2.vec2,0,0);}
    };
-   var view = function (player) {
-      return A2($Graphics$Collage.move,
-      A2($Debug.watch,"Position",$Math$Vector2.toTuple(player.pos)),
-      A2($Graphics$Collage.gradient,
-      getGradient(player),
-      $Graphics$Collage.polygon(_U.list([{ctor: "_Tuple2",_0: -20,_1: 0},{ctor: "_Tuple2",_0: 0,_1: 40},{ctor: "_Tuple2",_0: 20,_1: 0}]))));
+   var shape = _U.list([{ctor: "_Tuple2",_0: -20,_1: 0},{ctor: "_Tuple2",_0: 0,_1: 40},{ctor: "_Tuple2",_0: 20,_1: 0}]);
+   var getSegments = function (player) {
+      var vecs = A2($List.map,function (_p4) {    return A2($Math$Vector2.add,player.pos,$Math$Vector2.fromTuple(_p4));},shape);
+      return A3($List.map2,
+      F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),
+      vecs,
+      A2($Basics._op["++"],A2($List.drop,1,vecs),A2($List.take,1,vecs)));
    };
-   var update = F2(function (action,player) {
-      var _p5 = action;
-      switch (_p5.ctor)
-      {case "Go": return _U.update(player,{dir: A2($Debug.watch,"Direction",_p5._0)});
-         case "Shoot": return _U.update(player,{lastShot: _p5._0,color: $Color.complement(player.color)});
-         default: return _U.update(player,
-           {pos: A2(inBounds,player.dims,A2($Math$Vector2.add,player.pos,A2($Math$Vector2.scale,_p5._0 * player.speed,toVec(player.dir))))});}
-   });
+   var Hit = {ctor: "Hit"};
    var Tick = function (a) {    return {ctor: "Tick",_0: a};};
    var Shoot = function (a) {    return {ctor: "Shoot",_0: a};};
    var Go = function (a) {    return {ctor: "Go",_0: a};};
+   var Dead = {ctor: "Dead"};
+   var Alive = {ctor: "Alive"};
+   var getGradient = function (player) {
+      var color = _U.eq(player.status,Alive) ? player.color : A2($Utils.transparency,0.2,player.color);
+      return A3($Color.linear,
+      {ctor: "_Tuple2",_0: 0,_1: 0},
+      {ctor: "_Tuple2",_0: -20,_1: 5},
+      _U.list([{ctor: "_Tuple2",_0: 0.0,_1: color}
+              ,{ctor: "_Tuple2",_0: 0.1,_1: color}
+              ,{ctor: "_Tuple2",_0: 0.3,_1: A2($Utils.lum,1.5,color)}
+              ,{ctor: "_Tuple2",_0: 0.5,_1: A2($Utils.lum,5.0,color)}
+              ,{ctor: "_Tuple2",_0: 0.8,_1: A2($Utils.lum,1.5,color)}
+              ,{ctor: "_Tuple2",_0: 1.0,_1: color}]));
+   };
+   var view = function (player) {
+      var projViews = A2($List.map,$BubbleTrouble$Projectile.view,player.projectiles);
+      var playerView = A2($Graphics$Collage.move,
+      A2($Debug.watch,"Position",$Math$Vector2.toTuple(player.pos)),
+      A2($Graphics$Collage.gradient,getGradient(player),$Graphics$Collage.polygon(shape)));
+      return $Graphics$Collage.group(A2($Basics._op["++"],projViews,_U.list([playerView])));
+   };
    var Stop = {ctor: "Stop"};
+   var update = F2(function (action,player) {
+      var _p5 = action;
+      switch (_p5.ctor)
+      {case "Go": return _U.eq(player.status,Alive) ? _U.update(player,{dir: A2($Debug.watch,"Direction",_p5._0)}) : _U.update(player,{dir: Stop});
+         case "Shoot": var pos = A2($Math$Vector2.add,player.pos,A2($Math$Vector2.vec2,0,40));
+           var newProjs = _U.eq(player.projectiles,_U.list([])) ? A2($List._op["::"],
+           A3($BubbleTrouble$Projectile.simpleProjectile,pos,player.color,player.dims),
+           player.projectiles) : player.projectiles;
+           return _U.eq(player.status,Alive) ? _U.update(player,{lastShot: _p5._0,projectiles: newProjs}) : player;
+         case "Tick": var _p8 = _p5._0;
+           var newPos = A2(inBounds,player.dims,A2($Math$Vector2.add,player.pos,A2($Math$Vector2.scale,_p8 * player.speed,toVec(player.dir))));
+           var _p6 = player.dims;
+           var h = _p6._1;
+           var projs = A2($List.filter,
+           function (_p7) {
+              return function (x) {
+                 return _U.cmp(x,$Basics.toFloat(h) / 2) < 0;
+              }($Math$Vector2.getY(function (_) {    return _.pos;}(_p7)));
+           },
+           A2($List.map,$BubbleTrouble$Projectile.update($BubbleTrouble$Projectile.Tick(_p8)),player.projectiles));
+           return _U.update(player,{pos: newPos,projectiles: projs});
+         default: return _U.update(player,{status: Dead,dir: Stop});}
+   });
    var Right = {ctor: "Right"};
    var Left = {ctor: "Left"};
-   var Model = F6(function (a,b,c,d,e,f) {    return {pos: a,speed: b,color: c,dir: d,lastShot: e,dims: f};});
+   var Model = F8(function (a,b,c,d,e,f,g,h) {    return {pos: a,speed: b,color: c,dir: d,lastShot: e,projectiles: f,status: g,dims: h};});
    var newPlayer = F2(function (color,dims) {
       var y = function (x) {    return (0 - x) / 2;}($Basics.toFloat($Basics.snd(dims)));
-      return A6(Model,A2($Math$Vector2.vec2,0,y),160,color,Stop,0,dims);
+      return A8(Model,A2($Math$Vector2.vec2,0,y),160,color,Stop,0,_U.list([]),Alive,dims);
    });
    return _elm.BubbleTrouble.Player.values = {_op: _op
                                              ,Model: Model
                                              ,Left: Left
                                              ,Right: Right
                                              ,Stop: Stop
+                                             ,Alive: Alive
+                                             ,Dead: Dead
                                              ,Go: Go
                                              ,Shoot: Shoot
                                              ,Tick: Tick
+                                             ,Hit: Hit
+                                             ,shape: shape
                                              ,newPlayer: newPlayer
                                              ,update: update
                                              ,view: view
                                              ,toVec: toVec
                                              ,inBounds: inBounds
                                              ,getGradient: getGradient
-                                             ,lum: lum};
+                                             ,getSegments: getSegments};
+};Elm.BubbleTrouble = Elm.BubbleTrouble || {};
+Elm.BubbleTrouble.Collisions = Elm.BubbleTrouble.Collisions || {};
+Elm.BubbleTrouble.Collisions.make = function (_elm) {
+   "use strict";
+   _elm.BubbleTrouble = _elm.BubbleTrouble || {};
+   _elm.BubbleTrouble.Collisions = _elm.BubbleTrouble.Collisions || {};
+   if (_elm.BubbleTrouble.Collisions.values) return _elm.BubbleTrouble.Collisions.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $BubbleTrouble$Ball = Elm.BubbleTrouble.Ball.make(_elm),
+   $BubbleTrouble$Player = Elm.BubbleTrouble.Player.make(_elm),
+   $BubbleTrouble$Projectile = Elm.BubbleTrouble.Projectile.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Math$Vector2 = Elm.Math.Vector2.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var distPointSegment = F2(function (p,_p0) {
+      var _p1 = _p0;
+      var _p3 = _p1._1;
+      var _p2 = _p1._0;
+      var v = A2($Math$Vector2.sub,_p3,_p2);
+      var vn = $Math$Vector2.normalize(v);
+      var dc = A2($Math$Vector2.dot,vn,A2($Math$Vector2.sub,p,_p2));
+      var dv = $Math$Vector2.length(v);
+      var c = _U.cmp(dc,dv) > 0 ? _p3 : _U.cmp(dc,0) < 0 ? _p2 : A2($Math$Vector2.add,_p2,A2($Math$Vector2.scale,dc,vn));
+      return A2($Math$Vector2.distance,p,c);
+   });
+   var playerCollision = F2(function (balls,player) {
+      var collides = A2($List.any,
+      function (b) {
+         return A2($List.any,function (seg) {    return _U.cmp(A2(distPointSegment,b.pos,seg),b.radius) < 0;},$BubbleTrouble$Player.getSegments(player));
+      },
+      balls);
+      return collides ? A2($BubbleTrouble$Player.update,$BubbleTrouble$Player.Hit,player) : player;
+   });
+   var ballCollisions = function (projs) {
+      var segs = A2($List.map,$BubbleTrouble$Projectile.getSegment,projs);
+      var collides = function (ball) {    return A2($List.any,function (seg) {    return _U.cmp(A2(distPointSegment,ball.pos,seg),ball.radius) < 0;},segs);};
+      return $List.filter(function (_p4) {    return $Basics.not(collides(_p4));});
+   };
+   return _elm.BubbleTrouble.Collisions.values = {_op: _op,ballCollisions: ballCollisions,playerCollision: playerCollision,distPointSegment: distPointSegment};
+};Elm.Native.Char = {};
+Elm.Native.Char.make = function(localRuntime) {
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Char = localRuntime.Native.Char || {};
+	if (localRuntime.Native.Char.values)
+	{
+		return localRuntime.Native.Char.values;
+	}
+
+	var Utils = Elm.Native.Utils.make(localRuntime);
+
+	return localRuntime.Native.Char.values = {
+		fromCode: function(c) { return Utils.chr(String.fromCharCode(c)); },
+		toCode: function(c) { return c.charCodeAt(0); },
+		toUpper: function(c) { return Utils.chr(c.toUpperCase()); },
+		toLower: function(c) { return Utils.chr(c.toLowerCase()); },
+		toLocaleUpper: function(c) { return Utils.chr(c.toLocaleUpperCase()); },
+		toLocaleLower: function(c) { return Utils.chr(c.toLocaleLowerCase()); }
+	};
+};
+Elm.Char = Elm.Char || {};
+Elm.Char.make = function (_elm) {
+   "use strict";
+   _elm.Char = _elm.Char || {};
+   if (_elm.Char.values) return _elm.Char.values;
+   var _U = Elm.Native.Utils.make(_elm),$Basics = Elm.Basics.make(_elm),$Native$Char = Elm.Native.Char.make(_elm);
+   var _op = {};
+   var fromCode = $Native$Char.fromCode;
+   var toCode = $Native$Char.toCode;
+   var toLocaleLower = $Native$Char.toLocaleLower;
+   var toLocaleUpper = $Native$Char.toLocaleUpper;
+   var toLower = $Native$Char.toLower;
+   var toUpper = $Native$Char.toUpper;
+   var isBetween = F3(function (low,high,$char) {    var code = toCode($char);return _U.cmp(code,toCode(low)) > -1 && _U.cmp(code,toCode(high)) < 1;});
+   var isUpper = A2(isBetween,_U.chr("A"),_U.chr("Z"));
+   var isLower = A2(isBetween,_U.chr("a"),_U.chr("z"));
+   var isDigit = A2(isBetween,_U.chr("0"),_U.chr("9"));
+   var isOctDigit = A2(isBetween,_U.chr("0"),_U.chr("7"));
+   var isHexDigit = function ($char) {
+      return isDigit($char) || (A3(isBetween,_U.chr("a"),_U.chr("f"),$char) || A3(isBetween,_U.chr("A"),_U.chr("F"),$char));
+   };
+   return _elm.Char.values = {_op: _op
+                             ,isUpper: isUpper
+                             ,isLower: isLower
+                             ,isDigit: isDigit
+                             ,isOctDigit: isOctDigit
+                             ,isHexDigit: isHexDigit
+                             ,toUpper: toUpper
+                             ,toLower: toLower
+                             ,toLocaleUpper: toLocaleUpper
+                             ,toLocaleLower: toLocaleLower
+                             ,toCode: toCode
+                             ,fromCode: fromCode};
 };Elm.BubbleTrouble = Elm.BubbleTrouble || {};
 Elm.BubbleTrouble.Game = Elm.BubbleTrouble.Game || {};
 Elm.BubbleTrouble.Game.make = function (_elm) {
@@ -6040,6 +6175,7 @@ Elm.BubbleTrouble.Game.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $BubbleTrouble$Ball = Elm.BubbleTrouble.Ball.make(_elm),
+   $BubbleTrouble$Collisions = Elm.BubbleTrouble.Collisions.make(_elm),
    $BubbleTrouble$Player = Elm.BubbleTrouble.Player.make(_elm),
    $Char = Elm.Char.make(_elm),
    $Color = Elm.Color.make(_elm),
@@ -6050,41 +6186,52 @@ Elm.BubbleTrouble.Game.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
-   $Time = Elm.Time.make(_elm);
+   $Time = Elm.Time.make(_elm),
+   $Utils = Elm.Utils.make(_elm);
    var _op = {};
-   var updatePlayer = F2(function (dt,_p0) {
-      var _p1 = _p0;
-      return {ctor: "_Tuple2",_0: _p1._0,_1: A2($BubbleTrouble$Player.update,$BubbleTrouble$Player.Tick(dt),_p1._1)};
+   var updateBalls = F2(function (dt,players) {
+      return function (_p0) {
+         return A2($BubbleTrouble$Collisions.ballCollisions,
+         A2($List.concatMap,function (_p1) {    return function (_) {    return _.projectiles;}($Basics.snd(_p1));},players),
+         A2($List.map,$BubbleTrouble$Ball.update($BubbleTrouble$Ball.Tick(dt)),_p0));
+      };
    });
-   var controlPlayer = F3(function (t,keys,_p2) {
+   var updatePlayer = F3(function (dt,balls,_p2) {
       var _p3 = _p2;
-      var _p5 = _p3._1;
-      var _p4 = _p3._0;
-      var player$ = A2($List.member,_p4.left,keys) ? A2($List.member,_p4.right,keys) ? A2($BubbleTrouble$Player.update,
+      return {ctor: "_Tuple2"
+             ,_0: _p3._0
+             ,_1: A2($BubbleTrouble$Collisions.playerCollision,balls,A2($BubbleTrouble$Player.update,$BubbleTrouble$Player.Tick(dt),_p3._1))};
+   });
+   var controlPlayer = F3(function (t,keys,_p4) {
+      var _p5 = _p4;
+      var _p7 = _p5._1;
+      var _p6 = _p5._0;
+      var player$ = A2($List.member,_p6.left,keys) ? A2($List.member,_p6.right,keys) ? A2($BubbleTrouble$Player.update,
       $BubbleTrouble$Player.Go($BubbleTrouble$Player.Stop),
-      _p5) : A2($BubbleTrouble$Player.update,$BubbleTrouble$Player.Go($BubbleTrouble$Player.Left),_p5) : A2($List.member,
-      _p4.right,
-      keys) ? A2($BubbleTrouble$Player.update,$BubbleTrouble$Player.Go($BubbleTrouble$Player.Right),_p5) : A2($BubbleTrouble$Player.update,
+      _p7) : A2($BubbleTrouble$Player.update,$BubbleTrouble$Player.Go($BubbleTrouble$Player.Left),_p7) : A2($List.member,
+      _p6.right,
+      keys) ? A2($BubbleTrouble$Player.update,$BubbleTrouble$Player.Go($BubbleTrouble$Player.Right),_p7) : A2($BubbleTrouble$Player.update,
       $BubbleTrouble$Player.Go($BubbleTrouble$Player.Stop),
-      _p5);
-      var player$$ = A2($List.member,_p4.shoot,keys) ? A2($BubbleTrouble$Player.update,$BubbleTrouble$Player.Shoot(t),player$) : player$;
-      return {ctor: "_Tuple2",_0: _p4,_1: player$$};
+      _p7);
+      var player$$ = A2($List.member,_p6.shoot,keys) ? A2($BubbleTrouble$Player.update,$BubbleTrouble$Player.Shoot(t),player$) : player$;
+      return {ctor: "_Tuple2",_0: _p6,_1: player$$};
    });
    var view = function (model) {
       var players = A2($List.map,$BubbleTrouble$Player.view,A2($List.map,$Basics.snd,model.players));
       var balls = A2($List.map,$BubbleTrouble$Ball.view,model.balls);
       var forms = A2($List.append,players,balls);
-      return A2($Graphics$Element.color,$Color.lightYellow,A3($Graphics$Collage.collage,$Basics.fst(model.dims),$Basics.snd(model.dims),forms));
+      return A2($Graphics$Element.color,
+      A2($Utils.lum,1.15,$Color.lightYellow),
+      A3($Graphics$Collage.collage,$Basics.fst(model.dims),$Basics.snd(model.dims),forms));
    };
    var update = F2(function (action,model) {
-      var _p6 = action;
-      if (_p6.ctor === "Tick") {
-            var _p7 = _p6._0;
-            return _U.update(model,
-            {balls: A2($List.map,$BubbleTrouble$Ball.update($BubbleTrouble$Ball.Tick(_p7)),model.balls)
-            ,players: A2($List.map,updatePlayer(_p7),model.players)});
+      var _p8 = action;
+      if (_p8.ctor === "Tick") {
+            var _p9 = _p8._0;
+            var newBalls = A3(updateBalls,_p9,model.players,model.balls);
+            return _U.update(model,{balls: newBalls,players: A2($List.map,A2(updatePlayer,_p9,newBalls),model.players)});
          } else {
-            return _U.update(model,{players: A2($List.map,A2(controlPlayer,_p6._0._0,_p6._0._1),model.players)});
+            return _U.update(model,{players: A2($List.map,A2(controlPlayer,_p8._0._0,_p8._0._1),model.players)});
          }
    });
    var Control = function (a) {    return {ctor: "Control",_0: a};};
@@ -6099,7 +6246,8 @@ Elm.BubbleTrouble.Game.make = function (_elm) {
                                            ,update: update
                                            ,view: view
                                            ,controlPlayer: controlPlayer
-                                           ,updatePlayer: updatePlayer};
+                                           ,updatePlayer: updatePlayer
+                                           ,updateBalls: updateBalls};
 };Elm.Native.AnimationFrame = {};
 Elm.Native.AnimationFrame.make = function(localRuntime) {
 
