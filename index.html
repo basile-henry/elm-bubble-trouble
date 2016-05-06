@@ -6016,10 +6016,26 @@ Elm.BubbleTrouble.Player.make = function (_elm) {
    var Dead = {ctor: "Dead"};
    var Alive = {ctor: "Alive"};
    var getGradient = function (player) {
+      var _p5 = player.dims;
+      var w = _p5._0;
+      var h = _p5._1;
+      var topLeft = A2($Math$Vector2.vec2,(0 - $Basics.toFloat(w)) / 2,$Basics.toFloat(h) / 2);
+      var offset = function (_p6) {    return $Math$Vector2.getX($Math$Vector2.normalize(_p6));}(A2($Math$Vector2.sub,topLeft,player.pos));
+      var _p7 = $Basics.toPolar({ctor: "_Tuple2",_0: offset * 8,_1: -20});
+      var r = _p7._0;
+      var theta = _p7._1;
+      var p1 = function (_p8) {
+         var _p9 = _p8;
+         return {ctor: "_Tuple2",_0: _p9._0,_1: _p9._1 + 40};
+      }($Basics.fromPolar({ctor: "_Tuple2",_0: r,_1: theta + 0.5}));
+      var p2 = function (_p10) {
+         var _p11 = _p10;
+         return {ctor: "_Tuple2",_0: _p11._0,_1: _p11._1 + 40};
+      }($Basics.fromPolar({ctor: "_Tuple2",_0: r,_1: theta - 0.6}));
       var color = _U.eq(player.status,Alive) ? player.color : A2($Utils.transparency,0.2,player.color);
       return A3($Color.linear,
-      {ctor: "_Tuple2",_0: 0,_1: 0},
-      {ctor: "_Tuple2",_0: -20,_1: 5},
+      p1,
+      p2,
       _U.list([{ctor: "_Tuple2",_0: 0.0,_1: color}
               ,{ctor: "_Tuple2",_0: 0.1,_1: color}
               ,{ctor: "_Tuple2",_0: 0.3,_1: A2($Utils.lum,1.5,color)}
@@ -6036,35 +6052,32 @@ Elm.BubbleTrouble.Player.make = function (_elm) {
    };
    var Stop = {ctor: "Stop"};
    var update = F2(function (action,player) {
-      var _p5 = action;
-      switch (_p5.ctor)
-      {case "Go": return _U.eq(player.status,Alive) ? _U.update(player,{dir: A2($Debug.watch,"Direction",_p5._0)}) : _U.update(player,{dir: Stop});
+      var _p12 = action;
+      switch (_p12.ctor)
+      {case "Go": return _U.eq(player.status,Alive) ? _U.update(player,{dir: A2($Debug.watch,"Direction",_p12._0)}) : _U.update(player,{dir: Stop});
          case "Shoot": var pos = A2($Math$Vector2.add,player.pos,A2($Math$Vector2.vec2,0,40));
            var newProjs = _U.eq(player.projectiles,_U.list([])) ? A2($List._op["::"],
            A3($BubbleTrouble$Projectile.simpleProjectile,pos,player.color,player.dims),
            player.projectiles) : player.projectiles;
-           return _U.eq(player.status,Alive) ? _U.update(player,{lastShot: _p5._0,projectiles: newProjs}) : player;
-         case "Tick": var _p8 = _p5._0;
-           var newPos = A2(inBounds,player.dims,A2($Math$Vector2.add,player.pos,A2($Math$Vector2.scale,_p8 * player.speed,toVec(player.dir))));
-           var _p6 = player.dims;
-           var h = _p6._1;
+           return _U.eq(player.status,Alive) ? _U.update(player,{lastShot: _p12._0,projectiles: newProjs}) : player;
+         case "Tick": var _p15 = _p12._0;
+           var newPos = A2(inBounds,player.dims,A2($Math$Vector2.add,player.pos,A2($Math$Vector2.scale,_p15 * player.speed,toVec(player.dir))));
+           var _p13 = player.dims;
+           var h = _p13._1;
            var projs = A2($List.filter,
-           function (_p7) {
+           function (_p14) {
               return function (x) {
                  return _U.cmp(x,$Basics.toFloat(h) / 2) < 0;
-              }($Math$Vector2.getY(function (_) {    return _.pos;}(_p7)));
+              }($Math$Vector2.getY(function (_) {    return _.pos;}(_p14)));
            },
-           A2($List.map,$BubbleTrouble$Projectile.update($BubbleTrouble$Projectile.Tick(_p8)),player.projectiles));
+           A2($List.map,$BubbleTrouble$Projectile.update($BubbleTrouble$Projectile.Tick(_p15)),player.projectiles));
            return _U.update(player,{pos: newPos,projectiles: projs});
          default: return _U.update(player,{status: Dead,dir: Stop});}
    });
    var Right = {ctor: "Right"};
    var Left = {ctor: "Left"};
    var Model = F8(function (a,b,c,d,e,f,g,h) {    return {pos: a,speed: b,color: c,dir: d,lastShot: e,projectiles: f,status: g,dims: h};});
-   var newPlayer = F2(function (color,dims) {
-      var y = function (x) {    return (0 - x) / 2;}($Basics.toFloat($Basics.snd(dims)));
-      return A8(Model,A2($Math$Vector2.vec2,0,y),160,color,Stop,0,_U.list([]),Alive,dims);
-   });
+   var newPlayer = F3(function (pos,color,dims) {    return A8(Model,pos,160,color,Stop,0,_U.list([]),Alive,dims);});
    return _elm.BubbleTrouble.Player.values = {_op: _op
                                              ,Model: Model
                                              ,Left: Left
@@ -6276,7 +6289,7 @@ Elm.BubbleTrouble.Game.make = function (_elm) {
       return {ctor: "_Tuple2",_0: _p11,_1: player$$};
    });
    var backgroundGradient = function (pos) {
-      return A5($Color.radial,pos,10.0,pos,400.0,_U.list([{ctor: "_Tuple2",_0: 0,_1: $Color.white},{ctor: "_Tuple2",_0: 1,_1: $Color.lightYellow}]));
+      return A5($Color.radial,pos,10.0,pos,400.0,_U.list([{ctor: "_Tuple2",_0: 0,_1: $Color.white},{ctor: "_Tuple2",_0: 1,_1: $Color.lightOrange}]));
    };
    var view = function (model) {
       var players = A2($List.map,$BubbleTrouble$Player.view,A2($List.map,$Basics.snd,model.players));
@@ -7670,13 +7683,18 @@ Elm.Main.make = function (_elm) {
       A2($Graphics$Element.midTopAt,$Graphics$Element.relative(0.5),$Graphics$Element.relative(5.0e-2)),
       A2($Graphics$Element.flow,$Graphics$Element.down,views));
    });
-   var init = A2(Model,
-   0,
-   A3($BubbleTrouble$Game.Model,
-   dims,
-   _U.list([A7($BubbleTrouble$Ball.Model,A2($Math$Vector2.vec2,250,100),A2($Math$Vector2.vec2,-30,0),50.0,-250,$Color.lightGreen,3,dims)
-           ,A7($BubbleTrouble$Ball.Model,A2($Math$Vector2.vec2,-300,0),A2($Math$Vector2.vec2,50,0),30.0,-250,$Color.lightBlue,1,dims)]),
-   _U.list([{ctor: "_Tuple2",_0: A3($BubbleTrouble$Game.Controls,37,39,38),_1: A2($BubbleTrouble$Player.newPlayer,$Color.red,dims)}])));
+   var init = function () {
+      var y = function (x) {    return (0 - x) / 2;}($Basics.toFloat($Basics.snd(dims)));
+      return A2(Model,
+      0,
+      A3($BubbleTrouble$Game.Model,
+      dims,
+      _U.list([A7($BubbleTrouble$Ball.Model,A2($Math$Vector2.vec2,250,100),A2($Math$Vector2.vec2,-30,0),50.0,-250,$Color.lightGreen,3,dims)
+              ,A7($BubbleTrouble$Ball.Model,A2($Math$Vector2.vec2,-300,0),A2($Math$Vector2.vec2,50,0),30.0,-250,$Color.lightBlue,2,dims)]),
+      _U.list([{ctor: "_Tuple2"
+               ,_0: A3($BubbleTrouble$Game.Controls,37,39,38)
+               ,_1: A3($BubbleTrouble$Player.newPlayer,A2($Math$Vector2.vec2,0,y),$Color.red,dims)}])));
+   }();
    var maxDt = 5.0e-2;
    var toDts = function (dt) {    return _U.cmp(dt,maxDt) < 0 ? _U.list([dt]) : A2($List._op["::"],maxDt,toDts(dt - maxDt));};
    var main = function () {
