@@ -2,7 +2,7 @@ module BubbleTrouble.Player where
 
 import Color exposing (Color, Gradient, complement, linear, white, toHsl, hsla)
 import Graphics.Collage exposing (Form, polygon, gradient, move, group, dashed, outlined, circle)
-import Math.Vector2 exposing (Vec2, vec2, add, scale, toTuple, fromTuple, getY)
+import Math.Vector2 exposing (Vec2, vec2, add, scale, sub, getX, toTuple, fromTuple, getY, normalize)
 import Time exposing (Time)
 
 import Utils exposing (lum, transparency)
@@ -123,12 +123,18 @@ inBounds (w', _) pos =
 getGradient : Model -> Gradient
 getGradient player =
     let color =
-        if player.status == Alive then
-            player.color
-        else
-            transparency 0.2 player.color
+            if player.status == Alive then
+                player.color
+            else
+                transparency 0.2 player.color
+        (w, h) = player.dims
+        topLeft = vec2 (-(toFloat w)/2) (toFloat h / 2)
+        offset = getX << normalize <| sub topLeft player.pos
+        (r, theta) = toPolar (offset * 8, -20)
+        p1 = (\(x, y) -> (x, y+40)) <| fromPolar (r, theta + 0.6)
+        p2 = (\(x, y) -> (x, y+40)) <| fromPolar (r, theta - 0.6)
     in
-        linear (0, 0) (-20, 5)
+        linear p1 p2
             [ (0.0, color)
             , (0.1, color)
             , (0.3, lum 1.5 color)
