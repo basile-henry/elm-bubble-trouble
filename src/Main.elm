@@ -2,7 +2,7 @@ module Main where
 
 import Char exposing (KeyCode, toCode)
 import Color exposing (..)
-import Graphics.Element exposing (Element, down, left, right, middle, flow, leftAligned, relative, midTopAt, container)
+import Graphics.Element exposing (Element, down, left, right, midRight, flow, leftAligned, relative, midTopAt, container)
 import AnimationFrame exposing (frame)
 import Signal exposing (foldp, merge)
 import Window exposing (dimensions)
@@ -70,11 +70,8 @@ view (wx, wy) model =
                 |> fromString
                 |> height 20
                 |> leftAligned
-                |> container 80 30 middle
-        infoView =
-            [fpsView]
-                |> flow right
-        views = [gameView, infoView]
+                |> container (fst dims) 30 midRight
+        views = [gameView, fpsView]
     in
         flow down views
                 |> container wx wy (midTopAt (relative 0.5) (relative 0.05))
@@ -91,8 +88,8 @@ init =
     Model 0
         <| Game.Model
             dims
-            [ Ball.Model (vec2   50 100) (vec2 -30 0) 50.0 -250 lightGreen dims
-            , Ball.Model (vec2 -100   0) (vec2  50 0) 30.0 -250 lightBlue  dims
+            [ Ball.Model (vec2  250 100) (vec2 -30 0) 50.0 -250 lightGreen 3 dims
+            , Ball.Model (vec2 -300   0) (vec2  50 0) 30.0 -250 lightBlue  1 dims
             ]
             [ (Game.Controls 37 39 38 , Player.newPlayer red dims)
             ]

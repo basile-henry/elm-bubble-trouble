@@ -2,7 +2,7 @@ module BubbleTrouble.Game where
 
 import Char exposing (KeyCode)
 import Color exposing (..)
-import Graphics.Collage exposing (circle, filled, move, collage)
+import Graphics.Collage exposing (circle, filled, move, collage, gradient, rect)
 import Graphics.Element exposing (..)
 import Time exposing (Time)
 
@@ -33,11 +33,12 @@ update : Action -> Model -> Model
 update action model =
     case action of
         Tick dt ->
-            let newBalls = updateBalls dt model.players model.balls
+            let bs = updateBallsPhysics dt model.balls
+                (ps, bs') = updateBallsWithPlayers model.players bs
             in
                 { model
-                    | balls = newBalls
-                    , players = List.map (updatePlayer dt newBalls) model.players
+                    | balls = bs'
+                    , players = List.map (updatePlayer dt bs') ps
                 }
 
         Control (t, keys) ->
@@ -47,13 +48,24 @@ update action model =
 
 view : Model -> Element
 view model =
-    let balls   = List.map Ball.view model.balls
+    let (w', h') = model.dims
+        (w, h) = (toFloat w', toFloat h')
+        balls = List.map Ball.view model.balls
         players = List.map Player.view <| List.map snd model.players
-        forms   = List.append players balls
+        background =
+            rect w h
+                |> gradient (backgroundGradient (-w/2, h/2))
+        forms = background :: List.append players balls
     in
         forms
-            |> collage (fst model.dims) (snd model.dims)
-            |> color (lum 1.15 lightYellow)
+            |> collage w' h'
+
+backgroundGradient : (Float, Float) -> Gradient
+backgroundGradient pos =
+    radial pos 10.0 pos 400.0
+        [ (0, white)
+        , (1, lightYellow)
+        ]
 
 controlPlayer : Time -> List KeyCode -> ControledPlayer -> ControledPlayer
 controlPlayer t keys (ctrls, player) =
@@ -80,7 +92,24 @@ updatePlayer : Float -> List Ball.Model -> ControledPlayer -> ControledPlayer
 updatePlayer dt balls (ctrls, player) =
     (ctrls, playerCollision balls <| Player.update (Player.Tick dt) player)
 
-updateBalls : Float -> List ControledPlayer -> List Ball.Model -> List Ball.Model
-updateBalls dt players =
-        List.map (Ball.update <| Ball.Tick dt)
-            >> ballCollisions (List.concatMap (.projectiles << snd) players)
+updateBallsPhysics : Float -> List Ball.Model -> List Ball.Model
+updateBallsPhysics dt =
+    List.map (Ball.update <| Ball.Tick dt)
+
+updateBallsWithPlayers : List ControledPlayer -> List Ball.Model -> (List ControledPlayer, List Ball.Model)
+updateBallsWithPlayers players balls =
+    case players of
+        [] -> ([], balls)
+
+        (p::ps) ->
+            let (p', bs) = updateBallsWithPlayer p balls
+                (ps', bs') = updateBallsWithPlayers ps bs
+            in
+                (p' :: ps', bs')
+
+updateBallsWithPlayer : ControledPlayer -> List Ball.Model -> (ControledPlayer, List Ball.Model)
+updateBallsWithPlayer (ctrls, player) balls =
+    let (projs, newBalls) = ballCollisions player.projectiles balls
+        newPlayer = { player | projectiles = projs }
+    in
+        ((ctrls, newPlayer), newBalls)

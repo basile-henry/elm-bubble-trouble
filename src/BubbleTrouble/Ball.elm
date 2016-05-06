@@ -2,7 +2,7 @@ module BubbleTrouble.Ball where
 
 import Color exposing (Color, Gradient, radial, toHsl, hsla)
 import Graphics.Collage exposing (Form, circle, gradient, move)
-import Math.Vector2 exposing (Vec2, vec2, add, sub, normalize, scale, toTuple)
+import Math.Vector2 exposing (Vec2, vec2, fromTuple, add, sub, normalize, scale, toTuple)
 
 import Utils exposing (lum)
 
@@ -14,6 +14,7 @@ type alias Model =
     , radius : Float
     , gravity : Float
     , color : Color
+    , generation : Int
     , dims : (Int, Int)
     }
 
@@ -87,3 +88,23 @@ getGradient ball =
             ]
     in
         radial inner innerR outer ball.radius stops
+
+getChilds : Model -> List Model
+getChilds ball =
+    let (dx, _) = toTuple ball.speed
+        dy = 100
+        newBall=
+            { ball
+                | radius = ball.radius / 1.41
+                , generation = ball.generation - 1
+                , speed = fromTuple (dx, dy)
+            }
+        newBall' =
+            { newBall
+                | speed = fromTuple (-dx, dy)
+            }
+    in
+        if ball.generation > 0 then
+            [newBall, newBall']
+        else
+            []
