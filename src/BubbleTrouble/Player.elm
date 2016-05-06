@@ -36,11 +36,9 @@ type Action = Go Direction
 shape : List (Float, Float)
 shape = [(-20, 0), (0, 40), (20, 0)]
 
-newPlayer : Color -> (Int, Int) -> Model
-newPlayer color dims =
-    let y = (\x -> -x/2) <| toFloat <| snd dims
-    in
-        Model (vec2 0 y) 160 color Stop 0 [] Alive dims
+newPlayer : Vec2 -> Color -> (Int, Int) -> Model
+newPlayer pos color dims =
+    Model pos 160 color Stop 0 [] Alive dims
 
 update : Action -> Model -> Model
 update action player =
@@ -131,7 +129,7 @@ getGradient player =
         topLeft = vec2 (-(toFloat w)/2) (toFloat h / 2)
         offset = getX << normalize <| sub topLeft player.pos
         (r, theta) = toPolar (offset * 8, -20)
-        p1 = (\(x, y) -> (x, y+40)) <| fromPolar (r, theta + 0.6)
+        p1 = (\(x, y) -> (x, y+40)) <| fromPolar (r, theta + 0.5)
         p2 = (\(x, y) -> (x, y+40)) <| fromPolar (r, theta - 0.6)
     in
         linear p1 p2
