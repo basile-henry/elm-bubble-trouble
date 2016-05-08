@@ -42,8 +42,7 @@ getSegment : Model -> (Vec2, Vec2)
 getSegment proj =
     let bottom =
         -(toFloat <| snd proj.dims)/2
-            |> vec2 0
-            |> add proj.pos
+            |> vec2 (fst <| toTuple proj.pos)
     in
         (proj.pos, bottom)
 

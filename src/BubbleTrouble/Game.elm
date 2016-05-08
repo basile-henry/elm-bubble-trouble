@@ -63,8 +63,8 @@ view model =
 backgroundGradient : (Float, Float) -> Gradient
 backgroundGradient pos =
     radial pos 10.0 pos 400.0
-        [ (0, white)
-        , (1, lightOrange)
+        [ (0, lum 1.5 lightOrange)
+        , (1, lum 1.1 lightOrange)
         ]
 
 controlPlayer : Time -> List KeyCode -> ControledPlayer -> ControledPlayer

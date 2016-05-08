@@ -90,12 +90,13 @@ init =
         Model 0
             <| Game.Model
                 dims
-                [ Ball.Model (vec2  250 100) (vec2 -30 0) 50.0 -250 lightGreen 3 dims
-                , Ball.Model (vec2 -300   0) (vec2  50 0) 30.0 -250 lightBlue  2 dims
+                [ Ball.Model (vec2  250  100) (vec2 -30 0) 40.0 -250 lightGreen 4 dims
+                , Ball.Model (vec2 -300    0) (vec2  50 0)  30.0 -250 lightBlue  2 dims
+                , Ball.Model (vec2 -200 -150) (vec2  20 0)  20.0  500 grey       2 dims
                 ]
                 [ (Game.Controls 37 39 38 ,
                     Player.newPlayer (vec2 0 y) red dims)
                 --, (Game.Controls (toCode 'A') (toCode 'D') (toCode 'W'),
-                --    Player.newPlayer (vec2 -50 y) orange dims)
+                --    Player.newPlayer (vec2 -50 y) blue dims)
                 ]
 
