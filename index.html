@@ -5937,7 +5937,7 @@ Elm.BubbleTrouble.Projectile.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var getSegment = function (proj) {
-      var bottom = A2($Math$Vector2.add,proj.pos,A2($Math$Vector2.vec2,0,(0 - $Basics.toFloat($Basics.snd(proj.dims))) / 2));
+      var bottom = A2($Math$Vector2.vec2,$Basics.fst($Math$Vector2.toTuple(proj.pos)),(0 - $Basics.toFloat($Basics.snd(proj.dims))) / 2);
       return {ctor: "_Tuple2",_0: proj.pos,_1: bottom};
    };
    var view = function (proj) {
@@ -6242,7 +6242,8 @@ Elm.BubbleTrouble.Game.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
-   $Time = Elm.Time.make(_elm);
+   $Time = Elm.Time.make(_elm),
+   $Utils = Elm.Utils.make(_elm);
    var _op = {};
    var updateBallsWithPlayer = F2(function (_p0,balls) {
       var _p1 = _p0;
@@ -6289,7 +6290,12 @@ Elm.BubbleTrouble.Game.make = function (_elm) {
       return {ctor: "_Tuple2",_0: _p11,_1: player$$};
    });
    var backgroundGradient = function (pos) {
-      return A5($Color.radial,pos,10.0,pos,400.0,_U.list([{ctor: "_Tuple2",_0: 0,_1: $Color.white},{ctor: "_Tuple2",_0: 1,_1: $Color.lightOrange}]));
+      return A5($Color.radial,
+      pos,
+      10.0,
+      pos,
+      400.0,
+      _U.list([{ctor: "_Tuple2",_0: 0,_1: A2($Utils.lum,1.5,$Color.lightOrange)},{ctor: "_Tuple2",_0: 1,_1: A2($Utils.lum,1.1,$Color.lightOrange)}]));
    };
    var view = function (model) {
       var players = A2($List.map,$BubbleTrouble$Player.view,A2($List.map,$Basics.snd,model.players));
@@ -7689,8 +7695,9 @@ Elm.Main.make = function (_elm) {
       0,
       A3($BubbleTrouble$Game.Model,
       dims,
-      _U.list([A7($BubbleTrouble$Ball.Model,A2($Math$Vector2.vec2,250,100),A2($Math$Vector2.vec2,-30,0),50.0,-250,$Color.lightGreen,3,dims)
-              ,A7($BubbleTrouble$Ball.Model,A2($Math$Vector2.vec2,-300,0),A2($Math$Vector2.vec2,50,0),30.0,-250,$Color.lightBlue,2,dims)]),
+      _U.list([A7($BubbleTrouble$Ball.Model,A2($Math$Vector2.vec2,250,100),A2($Math$Vector2.vec2,-30,0),40.0,-250,$Color.lightGreen,4,dims)
+              ,A7($BubbleTrouble$Ball.Model,A2($Math$Vector2.vec2,-300,0),A2($Math$Vector2.vec2,50,0),30.0,-250,$Color.lightBlue,2,dims)
+              ,A7($BubbleTrouble$Ball.Model,A2($Math$Vector2.vec2,-200,-150),A2($Math$Vector2.vec2,20,0),20.0,500,$Color.grey,2,dims)]),
       _U.list([{ctor: "_Tuple2"
                ,_0: A3($BubbleTrouble$Game.Controls,37,39,38)
                ,_1: A3($BubbleTrouble$Player.newPlayer,A2($Math$Vector2.vec2,0,y),$Color.red,dims)}])));
